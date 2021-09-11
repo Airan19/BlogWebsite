@@ -1,5 +1,3 @@
-import os
-
 from flask import Flask, render_template, redirect, url_for, flash, request, abort
 from functools import wraps
 from flask_bootstrap import Bootstrap
@@ -14,10 +12,11 @@ from flask_gravatar import Gravatar
 from dotenv import load_dotenv
 import pytz
 import smtplib
+import os
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 ckeditor = CKEditor(app)
 Bootstrap(app)
 login_manager = LoginManager()
@@ -31,10 +30,11 @@ def load_user(user_id):
 
 
 ##CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', "sqlite:///blog.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 IST = pytz.timezone('Asia/Kolkata')
+
 
 ##CONFIGURE TABLES
 class User(UserMixin,db.Model):
@@ -104,6 +104,17 @@ def admin_only(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def user_login(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        try:
+            if not current_user.is_authenticated  :
+                return abort(403, description="Unauthorized access")
+        except AttributeError:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 @app.route('/')
 def get_all_posts():
@@ -166,8 +177,6 @@ def logout():
 
 
 previous_text = ''
-
-
 @app.route("/post/<int:post_id>", methods=['GET', 'POST'])
 def show_post(post_id):
     form = CommentForm()
@@ -198,6 +207,7 @@ def show_post(post_id):
 def about():
     return render_template("about.html")
 
+
 saved_message = ''
 saved_name = ''
 @app.route("/contact", methods=['GET', 'POST'])
@@ -210,10 +220,10 @@ def contact():
         phone = request.form["phone"]
         message = request.form["message"]
         saved_message = message
-        user = os.getenv('EMAIL')
+        user = os.environ.get('EMAIL')
         with smtplib.SMTP("smtp.gmail.com", 587) as connection:
             connection.starttls()
-            connection.login(user=user, password=os.getenv('PASSWORD'))
+            connection.login(user=user, password=os.environ.get('PASSWORD'))
             connection.sendmail(
                 from_addr=user,
                 to_addrs=user,
@@ -229,7 +239,7 @@ def contact():
 
 
 @app.route("/new-post", methods=['GET', 'POST'])
-@admin_only
+@user_login
 def add_new_post():
     form = CreatePostForm()
     if form.validate_on_submit():
@@ -250,7 +260,7 @@ def add_new_post():
 
 
 @app.route("/edit-post/<int:post_id>", methods=['GET', 'POST'])
-@admin_only
+@user_login
 def edit_post(post_id):
     post = BlogPost.query.get(post_id)
     edit_form = CreatePostForm(
@@ -264,7 +274,7 @@ def edit_post(post_id):
         post.title = edit_form.title.data
         post.subtitle = edit_form.subtitle.data
         post.img_url = edit_form.img_url.data
-        post.author = edit_form.author.data
+        # post.author = edit_form.author.data
         post.body = edit_form.body.data
         db.session.commit()
         return redirect(url_for("show_post", post_id=post.id))
@@ -273,12 +283,27 @@ def edit_post(post_id):
 
 
 @app.route("/delete/<int:post_id>")
-@admin_only
+@user_login
 def delete_post(post_id):
     post_to_delete = BlogPost.query.get(post_id)
     db.session.delete(post_to_delete)
     db.session.commit()
     return redirect(url_for('get_all_posts'))
+
+
+@app.route('/<name>/dashboard', methods=['GET', 'POST'])
+def user_dashboard(name):
+    try:
+        if current_user.is_anonymous or not current_user.is_authorised:
+            return redirect(url_for('login'))
+    except AttributeError:
+        # if current_user.is_authorised:
+        author_id = User.query.filter_by(name=name).first()
+        posts = BlogPost.query.filter_by(author_id=author_id.id).all()
+        current_user_dashboard = False
+        if current_user.name == name:
+            current_user_dashboard = True
+        return render_template('dashboard.html', name=name, all_posts=posts, current_user_dashboard=current_user_dashboard)
 
 
 if __name__ == "__main__":
