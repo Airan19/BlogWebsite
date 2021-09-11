@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, render_template, redirect, url_for, flash, request, abort
 from functools import wraps
 from flask_bootstrap import Bootstrap
@@ -8,8 +10,11 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
-import pytz
 from flask_gravatar import Gravatar
+from dotenv import load_dotenv
+import pytz
+import smtplib
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -17,6 +22,7 @@ ckeditor = CKEditor(app)
 Bootstrap(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
+load_dotenv('.env')
 
 
 @login_manager.user_loader
@@ -158,7 +164,10 @@ def logout():
     logout_user()
     return redirect(url_for('get_all_posts'))
 
+
 previous_text = ''
+
+
 @app.route("/post/<int:post_id>", methods=['GET', 'POST'])
 def show_post(post_id):
     form = CommentForm()
@@ -189,9 +198,33 @@ def show_post(post_id):
 def about():
     return render_template("about.html")
 
-
-@app.route("/contact")
+saved_message = ''
+saved_name = ''
+@app.route("/contact", methods=['GET', 'POST'])
 def contact():
+    global saved_message , saved_name
+    if request.method == "POST" and request.form['message'] != saved_message and request.form['name'] != saved_name:
+        name = request.form["name"]
+        saved_name = name
+        email = request.form["email"]
+        phone = request.form["phone"]
+        message = request.form["message"]
+        saved_message = message
+        user = os.getenv('EMAIL')
+        with smtplib.SMTP("smtp.gmail.com", 587) as connection:
+            connection.starttls()
+            connection.login(user=user, password=os.getenv('PASSWORD'))
+            connection.sendmail(
+                from_addr=user,
+                to_addrs=user,
+                msg=f"Subject: New Message!\n\n"
+                    f"Name: {name}\n"
+                    f"Email: {email}\n"
+                    f"Phone: {phone}\n"
+                    f"Message: {message}\n"
+            )
+
+        return render_template("contact.html", posted=True)
     return render_template("contact.html")
 
 
