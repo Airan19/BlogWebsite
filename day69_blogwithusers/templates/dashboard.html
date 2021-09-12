@@ -33,7 +33,7 @@
             <a href="#">{{post.author.name}}</a>
             on {{post.date}}
             {% if current_user.name == post.author.name or current_user.id == 1:%}
-            <a href="{{url_for('delete_post', post_id=post.id) }}">✘</a>
+            <a href="{{url_for('delete_post', post_id=post.id) }}"><i class="fas fa-trash" style="padding-left:30px;"></i></a>
             {% endif %}
           </p>
         </div>
