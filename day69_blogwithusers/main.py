@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, render_template, redirect, url_for, flash, request, abort
 from functools import wraps
 from flask_bootstrap import Bootstrap
@@ -13,6 +15,7 @@ from dotenv import load_dotenv
 import pytz
 import smtplib
 import os
+import random
 
 
 app = Flask(__name__)
@@ -23,7 +26,9 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 load_dotenv('.env')
 
-
+def colors():
+    all_colors = [("#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])) for i in range(4)]
+    return all_colors
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -119,7 +124,7 @@ def user_login(f):
 @app.route('/')
 def get_all_posts():
     posts = BlogPost.query.all()
-    return render_template("index.html", all_posts=posts)
+    return render_template("index.html", all_posts=posts, c=colors())
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -146,7 +151,7 @@ def register():
         login_user(new_user)
         return redirect(url_for('get_all_posts'))
 
-    return render_template("register.html", form=form)
+    return render_template("register.html", form=form, c=colors())
 
 
 @app.route('/login', methods=['GET','POST'])
@@ -167,7 +172,7 @@ def login():
             flash('The email does not exist, please try again.')
             return redirect(url_for('login'))
 
-    return render_template("login.html", form=form)
+    return render_template("login.html", form=form, c=colors())
 
 
 @app.route('/logout')
@@ -200,12 +205,12 @@ def show_post(post_id):
             flash('You need to login or register to comment.')
             return redirect(url_for('login'))
 
-    return render_template("post.html", post=requested_post, form=form, comments=Comment.query.filter_by(post_id=post_id).all(), avatar=gravatar)
+    return render_template("post.html", post=requested_post, form=form, comments=Comment.query.filter_by(post_id=post_id).all(), avatar=gravatar, c=colors())
 
 
 @app.route("/about")
 def about():
-    return render_template("about.html")
+    return render_template("about.html", c=colors())
 
 
 saved_message = ''
@@ -235,7 +240,7 @@ def contact():
             )
 
         return render_template("contact.html", posted=True)
-    return render_template("contact.html")
+    return render_template("contact.html", c=colors())
 
 
 @app.route("/new-post", methods=['GET', 'POST'])
@@ -256,7 +261,7 @@ def add_new_post():
         db.session.add(new_post)
         db.session.commit()
         return redirect(url_for("get_all_posts"))
-    return render_template("make-post.html", form=form)
+    return render_template("make-post.html", form=form, c=colors())
 
 
 @app.route("/edit-post/<int:post_id>", methods=['GET', 'POST'])
@@ -279,7 +284,7 @@ def edit_post(post_id):
         db.session.commit()
         return redirect(url_for("show_post", post_id=post.id))
 
-    return render_template("make-post.html", form=edit_form)
+    return render_template("make-post.html", form=edit_form, c=colors())
 
 
 @app.route("/delete/<int:post_id>")
@@ -303,7 +308,7 @@ def user_dashboard(name):
         current_user_dashboard = False
         if current_user.name == name:
             current_user_dashboard = True
-        return render_template('dashboard.html', name=name, all_posts=posts, current_user_dashboard=current_user_dashboard)
+        return render_template('dashboard.html', name=name, all_posts=posts, current_user_dashboard=current_user_dashboard, c=colors())
 
 
 if __name__ == "__main__":

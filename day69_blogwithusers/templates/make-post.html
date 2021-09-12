@@ -1,7 +1,11 @@
-{% import "bootstrap/wtf.html" as wtf %}
-
-{% block content %}
 {% include "header.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block head %}
+  <style type="text/css">
+    .help-block { color: red;}
+  </style>
+{% endblock %}
+{% block content %}
   <!-- Page Header -->
   <header class="masthead" style="background-image: url('{{ url_for('static', filename='img/edit-bg.jpg')}}')">
     <div class="overlay"></div>
