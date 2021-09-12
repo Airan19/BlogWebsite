@@ -39,7 +39,7 @@
       <a class="navbar-brand" href="{{url_for('get_all_posts')}}">ArkBlog</a>
         {% if not current_user.is_anonymous and not current_user_dashboard:%}
              <a class="navbar-brand" style="width:50%;text-align:center;" href="{{url_for('user_dashboard', name=current_user.name)}}">{{current_user.name}}</a>
-        {% endif %}
+      {% endif %}
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
         Menu
         <i class="fas fa-bars"></i>
