@@ -200,7 +200,7 @@ def show_post(post_id):
             flash('You need to login or register to comment.')
             return redirect(url_for('login'))
 
-    return render_template("post.html", post=requested_post, form=form, comments=Comment.query.all(), avatar=gravatar)
+    return render_template("post.html", post=requested_post, form=form, comments=Comment.query.filter_by(post_id=post_id).all(), avatar=gravatar)
 
 
 @app.route("/about")

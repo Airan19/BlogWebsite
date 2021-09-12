@@ -33,7 +33,7 @@
 
 <!--           Comments Area -->
 <!--            #Load the CKEditor-->
-              {{ ckeditor.load() }}
+              {{ ckeditor.load(pkg_type="basic") }}
 <!--            #Configure it with the name of the form field from CommentForm-->
               {{ ckeditor.config(name='comment_text') }}
 <!--            #Create the wtf quickform from CommentForm-->

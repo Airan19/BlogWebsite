@@ -11,6 +11,7 @@ body {
 }
 
 p {
+  color: red;
   line-height: 1.5;
   margin: 30px 0;
 }
@@ -483,4 +484,5 @@ footer .copyright {
   font-size: 16px;
   padding: 25px 35px;
 }
+
 
