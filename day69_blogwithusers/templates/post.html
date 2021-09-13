@@ -1,5 +1,14 @@
 {% include "header.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
+{% block head %}
+  <style type="text/css">
+    .help-block { color: red;}
+    .control-label{
+      font-family: sans-serif;
+      font-weight:bold;  }
+  </style>
+{% endblock %}
+
   <!-- Page Header -->
   <header class="masthead" style="background-image: url('{{post.img_url}}')">
     <div class="overlay"></div>
