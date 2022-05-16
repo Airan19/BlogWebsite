@@ -1,5 +1,3 @@
-import json
-
 from flask import Flask, render_template, redirect, url_for, flash, request, abort
 from functools import wraps
 from flask_bootstrap import Bootstrap
@@ -12,11 +10,13 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, cur
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 from dotenv import load_dotenv
+from bs4 import BeautifulSoup
 import pytz
 import smtplib
 import os
 import random
-
+import urllib.request
+import requests
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
@@ -310,6 +310,107 @@ def user_dashboard(name):
             current_user_dashboard = True
         return render_template('dashboard.html', name=name, all_posts=posts, current_user_dashboard=current_user_dashboard, c=colors())
 
+
+@app.route('/pixel-motivation', methods=['GET', 'POST'])
+def pixel_motivation():
+    today_brief = datetime.now().strftime('%d %b %Y')
+    url = "https://zenquotes.io/api/today/"
+    opener = urllib.request.build_opener()
+    opener.addheaders = [(
+        'User-Agent',
+        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36'
+    )]
+    urllib.request.install_opener(opener)
+
+    try:
+        response = requests.get(url)
+        # print(response)
+        quotes = response.json()[0]
+        quote = quotes['q']
+        author = quotes['a']
+        title = 'Quote of the Day'
+
+    except Exception:
+        response = requests.get(
+            "https://theysaidso.com/quote/alex-salmond-it-is-a-war-built-on-lies-that-has-fanned-the-flames-of-internation"
+        )
+        soup = BeautifulSoup(response.text, "html.parser")
+        author = soup.find("span", itemprop="name").getText()
+        quote = soup.find("p", class_="lead").getText()
+        # print(quote)
+        title = "Quote of the Day"
+
+    # to collect bg links from unsplash
+    # url = "https://source.unsplash.com/featured?calm,park,technology,doctor"
+    # bg_link = url
+    url = 'https://unsplash.com/s/photos/inspirational'
+    response = requests.get(url)
+    webpage = response.text
+    soup = BeautifulSoup(webpage, "html.parser")
+
+    bg_links_lists = [(i.get("src")) for i in soup.findAll(name="img")]
+    bg_link = random.choice(bg_links_lists)
+
+    today = datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%A")
+
+    with open('img_list.txt', 'r+') as y:
+        compare_list = str(y.readlines())[2:-3].split('><')
+        # return
+    last_updated = compare_list[-1].split(',')[1][:-1]
+    if last_updated != str(datetime.now().date()):
+
+        try:
+            response = requests.get(
+                "https://everydaypower.com/inspirational-quotes-with-pictures/")
+            webdata = response.text
+            soup = BeautifulSoup(webdata, "html.parser")
+            # print(response)
+            img = soup.find_all(name="div", class_="wp-block-image")
+            list_img = [str(ele).split('src="')[1].split('"')[0] for ele in img]
+            print(len(compare_list), len(list_img))
+            if len(compare_list) == len(list_img):
+                compare_list = []
+            while True:
+                final_img_link = random.choice(list_img)
+                if final_img_link not in compare_list:
+                    with open('img_list.txt', 'a+') as f:
+                        f.write(final_img_link +',' + str(datetime.now().date()) + '><')
+                        break
+        except Exception:
+            url = "https://quotelia.com/"
+            response = requests.get(url)
+            soup = BeautifulSoup(response.text, "html.parser")
+            # print(soup.text)
+            links = []
+            for q in soup.find_all(
+                    "div", class_="media media--blazy media--loading media--image"):
+                x = str(q.get_text).split("data-src=\"")[1].split("\"")[0]
+                links.append(f"https://quotelia.com{x}")
+
+            final_img_link = random.choice(links)
+    else:
+        final_img_link = compare_list[-1].split(',')[0]
+    message = (f"""
+    <div style='background-image:url({bg_link});background-repeat: no-repeat;
+    background-size:cover;background-attachment: fixed;
+    background-position: center; filter: blur(0.5px); padding:10px;'>
+
+    <header style="color: #93FFD8;background-color: #00000090; padding:6px; width:70%;">Dear User,<br><br>
+    Your <u>{today} Motivation!</u><br></header>
+    <br><p style="color: #FE7E6D;background-color: #00000090; padding:6px;">👉 {today_brief}
+    </p>
+    <p style="color: white;background-color: #00000090; padding:6px;">{title}:<br>
+    <br>{quote}</p><br>
+    <h3 style="color: black;padding:2px; font-family: 'PT Sans', sans-serif;background-color: #ffffff90;">by {author}</h3><br>
+    </div>
+    <div>
+    <h2>Bonus Pixel Motivation</h2>
+    <img src='{final_img_link}' alt='img'>
+    </div>
+    """)
+    # return message
+    return render_template('pixel.html', today=today, bg_link=bg_link, title=title,
+                           author=author, today_brief=today_brief, final_img_link=final_img_link, quote=quote)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
