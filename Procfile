@@ -1,1 +1,1 @@
-web: gunicorn main:app
+web: gunicorn day69_blogwithusers/main.py:app
