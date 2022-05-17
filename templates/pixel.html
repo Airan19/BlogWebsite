@@ -48,13 +48,14 @@
         $(window).on('resize', function() {
          if($(window).width() < 564) {
         $('#change').addClass('order-12');
+        $('#change').css('margin','auto');
         }
         });
 
         $(window).on('resize', function() {
-         if($(window).width() > 564) {
+         if($(window).width() > 563) {
         $('#change').removeClass('order-12');
-        $('#change').css('margin','auto');
+
         }
         });
     </script>
