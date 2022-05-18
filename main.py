@@ -311,10 +311,6 @@ def user_dashboard(name):
         return render_template('dashboard.html', name=name, all_posts=posts, current_user_dashboard=current_user_dashboard, c=colors())
 
 
-@app.route('/privacy-policy')
-def privacy_policy():
-    return render_template('privacy.html', c=colors())
-
 
 @app.route('/pixel-motivation', methods=['GET', 'POST'])
 def pixel_motivation():
