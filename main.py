@@ -313,7 +313,7 @@ def user_dashboard(name):
 
 @app.route('/pixel-motivation', methods=['GET', 'POST'])
 def pixel_motivation():
-    today_brief = datetime.now().strftime('%d %b %Y')
+    today_brief = datetime.now(IST).strftime('%d %b %Y')
     url = "https://zenquotes.io/api/today/"
     opener = urllib.request.build_opener()
     opener.addheaders = [(
