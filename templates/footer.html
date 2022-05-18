@@ -32,14 +32,26 @@
             </li>
           </ul>
           <div style="text-align:center; font-weight: 400; color:grey;
-                       font-size: 16px; font-family:sans-serif; line-height: 4;" class="small text-center text-muted">Copyright &copy; <text style="text-decoration:underline;" href="">ArkCode</text> 2021</div>
-           <h4 style="text-align:center; font-weight: 400; color:grey; letter-spacing: 3px;
+                       font-size: 16px; font-family:sans-serif; line-height:2; margin-top:15px;" class="small text-center text-muted">Copyright &copy; <a style="text-decoration:underline;" href="https://arkcode.studio">ArkCode</a> 2021
+          <br><button class="btn btn-dark mb-1 mt-1 py-2 px-2" style="border-radius:15px; border-bottom-left-radius: 0; border-top-right-radius: 0;" onclick="Privacy()">Privacy Policy</button>
+          </div>
+          <h4 style="text-align:center; font-weight: 400; color:grey; letter-spacing: 3px;
                        font-size: 12px; line-height: 4;" >A Blog Theme by Start Bootstrap</h4>
         </div>
       </div>
     </div>
   </footer>
+  <script>
+    function Privacy(){
+    let ele = document.getElementById('iframe');
 
+    if (ele.style.display == 'none'){
+     ele.style.display = 'flex';
+     }
+    else {
+     ele.style.display = 'none';}
+    };
+  </script>
   <!-- Bootstrap core JavaScript -->
   <script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js')}}"></script>
   <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
@@ -48,5 +60,9 @@
   <script src="{{ url_for('static', filename='js/clean-blog.min.js')}}"></script>
 
 </body>
+    <div  id="iframe" style="display:none;">
+      <button class="btn btn-dark mb-1 mt-1 py-2 px-2" onclick="Privacy()">Close</button>
+      <iframe  src="https://www.termsfeed.com/live/679e7474-1a9d-4f15-bb32-ea9c6496c2d8" style="border:0px" name="myiFrame" scrolling="yes" frameborder="0" marginheight="5px" marginwidth="5px" height="90%" width="80%" allowfullscreen></iframe>
+    </div>
 
 </html>

@@ -311,6 +311,11 @@ def user_dashboard(name):
         return render_template('dashboard.html', name=name, all_posts=posts, current_user_dashboard=current_user_dashboard, c=colors())
 
 
+@app.route('/privacy-policy')
+def privacy_policy():
+    return render_template('privacy.html', c=colors())
+
+
 @app.route('/pixel-motivation', methods=['GET', 'POST'])
 def pixel_motivation():
     today_brief = datetime.now(IST).strftime('%d %b %Y')
@@ -339,10 +344,6 @@ def pixel_motivation():
         quote = soup.find("p", class_="lead").getText()
         # print(quote)
         title = "Quote of the Day"
-
-    # to collect bg links from unsplash
-    # url = "https://source.unsplash.com/featured?calm,park,technology,doctor"
-    # bg_link = url
     url = 'https://unsplash.com/s/photos/inspirational'
     response = requests.get(url)
     webpage = response.text
@@ -390,25 +391,6 @@ def pixel_motivation():
             final_img_link = random.choice(links)
     else:
         final_img_link = compare_list[-1].split(',')[0]
-    message = (f"""
-    <div style='background-image:url({bg_link});background-repeat: no-repeat;
-    background-size:cover;background-attachment: fixed;
-    background-position: center; filter: blur(0.5px); padding:10px;'>
-
-    <header style="color: #93FFD8;background-color: #00000090; padding:6px; width:70%;">Dear User,<br><br>
-    Your <u>{today} Motivation!</u><br></header>
-    <br><p style="color: #FE7E6D;background-color: #00000090; padding:6px;">👉 {today_brief}
-    </p>
-    <p style="color: white;background-color: #00000090; padding:6px;">{title}:<br>
-    <br>{quote}</p><br>
-    <h3 style="color: black;padding:2px; font-family: 'PT Sans', sans-serif;background-color: #ffffff90;">by {author}</h3><br>
-    </div>
-    <div>
-    <h2>Bonus Pixel Motivation</h2>
-    <img src='{final_img_link}' alt='img'>
-    </div>
-    """)
-    # return message
     return render_template('pixel.html', today=today, bg_link=bg_link, title=title,
                            author=author, today_brief=today_brief, final_img_link=final_img_link, quote=quote)
 
